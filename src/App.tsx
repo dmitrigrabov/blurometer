@@ -38,6 +38,7 @@ const App = () => {
 
   return (
     <div>
+      <div></div>
       <Webcam
         audio={false}
         height={720}
@@ -46,6 +47,10 @@ const App = () => {
         videoConstraints={videoConstraints}
         ref={webcamRef}
       ></Webcam>
+      </div>
+      <div>
+        <p>Blurriness: {blurriness}</p>
+      </div>
     </div>
   );
 };
