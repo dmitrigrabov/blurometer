@@ -1,10 +1,13 @@
 import "./App.css";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Webcam from "react-webcam";
 import { calculateBlurriness } from "./utils/blurDetection";
+import { detectIdCard } from "./utils/idCardDetection";
 
 const App = () => {
   const webcamRef = useRef<Webcam | null>(null);
+  const [blurriness, setBlurriness] = useState<number | null>(null);
+  const [detectedIdCard, setDetectedIdCard] = useState<string | null>(null);
 
   const videoConstraints = {
     width: 1280,
@@ -17,7 +20,7 @@ const App = () => {
 
     if (imageSrc) {
       calculateBlurriness(imageSrc).then((blurriness) => {
-        console.log("Calculated blurriness", blurriness);
+        setBlurriness(blurriness);
       });
     }
 
@@ -28,28 +31,46 @@ const App = () => {
         console.time("calculateBlurriness");
         calculateBlurriness(imageSrc).then((blurriness) => {
           console.timeEnd("calculateBlurriness");
-          console.log("Calculated blurriness", blurriness);
+          setBlurriness(blurriness);
+        });
+
+        detectIdCard(imageSrc).then((idCard) => {
+          console.log("Detected id card", idCard);
+
+          if (idCard) {
+            setDetectedIdCard(idCard);
+          }
         });
       }
-    }, 250);
+    }, 1000);
 
     return () => clearInterval(interval);
   }, [webcamRef]);
 
   return (
-    <div>
-      <div></div>
-      <Webcam
-        audio={false}
-        height={720}
-        screenshotFormat="image/jpeg"
-        width={1280}
-        videoConstraints={videoConstraints}
-        ref={webcamRef}
-      ></Webcam>
+    <div className="app-container">
+      <div className="camera-container">
+        <Webcam
+          audio={false}
+          height={720}
+          screenshotFormat="image/jpeg"
+          width={1280}
+          videoConstraints={videoConstraints}
+          ref={webcamRef}
+        />
       </div>
-      <div>
-        <p>Blurriness: {blurriness}</p>
+      <div className="info-container">
+        <p>Blurriness: {blurriness?.toFixed(2) ?? "Calculating..."}</p>
+        {detectedIdCard && (
+          <div className="id-card-container">
+            <h3>Detected ID Card:</h3>
+            <img
+              src={detectedIdCard}
+              alt="Detected ID Card"
+              style={{ maxWidth: "100%", height: "auto" }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

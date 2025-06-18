@@ -1,6 +1,13 @@
 import { describe, it, expect, vi, beforeAll, beforeEach } from "vitest";
 import { detectIdCard, resetModel } from "./idCardDetection";
 import * as cocoSsd from "@tensorflow-models/coco-ssd";
+import * as tf from "@tensorflow/tfjs";
+
+// Mock TensorFlow.js
+vi.mock("@tensorflow/tfjs", () => ({
+  setBackend: vi.fn().mockResolvedValue(undefined),
+  ready: vi.fn().mockResolvedValue(undefined),
+}));
 
 // Mock the COCO-SSD model
 vi.mock("@tensorflow-models/coco-ssd", () => ({
@@ -57,11 +64,15 @@ describe("detectIdCard", () => {
   beforeEach(() => {
     // Reset the model singleton before each test
     resetModel();
+    // Reset mocks
+    vi.clearAllMocks();
   });
 
   it("detects and crops an ID card from an image", async () => {
     const result = await detectIdCard(whiteJpg);
     expect(result).toBe("data:image/jpeg;base64,mocked");
+    expect(tf.setBackend).toHaveBeenCalledWith("webgl");
+    expect(tf.ready).toHaveBeenCalled();
     expect(cocoSsd.load).toHaveBeenCalled();
   });
 
