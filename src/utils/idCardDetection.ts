@@ -43,7 +43,7 @@ export async function detectIdCard(
 
     // Detect objects in the image
     console.log("Running object detection...");
-    const predictions = await model.detect(img);
+    const predictions = await model.detect(img, 3, 0.2);
     console.log("Detection results:", predictions);
 
     // Look for document/card-like objects
@@ -70,29 +70,40 @@ export async function detectIdCard(
     canvas.height = img.height;
     ctx.drawImage(img, 0, 0, img.width, img.height);
 
-    // Draw rectangles and labels for all predictions
-    predictions.forEach((pred) => {
-      const [x, y, width, height] = pred.bbox;
-      ctx.strokeStyle = pred === cardPrediction ? "#00ff00" : "#ff0000"; // Green for card, red for others
-      ctx.lineWidth = 3;
-      ctx.strokeRect(x, y, width, height);
-      ctx.font = "18px Arial";
-      ctx.fillStyle = pred === cardPrediction ? "#00ff00" : "#ff0000";
-      const label = `${pred.class} (${(pred.score * 100).toFixed(1)}%)`;
-      ctx.fillText(label, x + 4, y + 22);
-    });
-
     // Optionally, crop the card area as before (tight crop)
     const [x, y, width, height] = cardPrediction.bbox;
+
+    // Add 10% margin to the crop size
+    const marginX = width * 0.05;
+    const marginY = height * 0.05;
+
+    const expandedX = Math.max(0, x - marginX);
+    const expandedY = Math.max(0, y - marginY);
+    const expandedWidth = Math.min(img.width - expandedX, width + 2 * marginX);
+    const expandedHeight = Math.min(
+      img.height - expandedY,
+      height + 2 * marginY
+    );
+
     const cropCanvas = document.createElement("canvas");
-    cropCanvas.width = width;
-    cropCanvas.height = height;
+    cropCanvas.width = expandedWidth;
+    cropCanvas.height = expandedHeight;
     const cropCtx = cropCanvas.getContext("2d");
     if (!cropCtx) throw new Error("Could not get crop canvas context");
-    cropCtx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
+    cropCtx.drawImage(
+      canvas,
+      expandedX,
+      expandedY,
+      expandedWidth,
+      expandedHeight,
+      0,
+      0,
+      expandedWidth,
+      expandedHeight
+    );
 
     // Return the cropped image with rectangles/labels as base64
-    const result = cropCanvas.toDataURL("image/jpeg", 0.95);
+    const result = cropCanvas.toDataURL("image/jpeg", 1);
     console.log("Cropped image generated, length:", result.length);
     return result;
   } catch (error) {
