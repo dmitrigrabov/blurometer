@@ -16,14 +16,6 @@ const App = () => {
   };
 
   useEffect(() => {
-    const imageSrc = webcamRef.current?.getScreenshot();
-
-    if (imageSrc) {
-      calculateBlurriness(imageSrc).then((blurriness) => {
-        setBlurriness(blurriness);
-      });
-    }
-
     const interval = setInterval(() => {
       const imageSrc = webcamRef.current?.getScreenshot();
 
@@ -35,8 +27,6 @@ const App = () => {
         });
 
         detectIdCard(imageSrc).then((idCard) => {
-          console.log("Detected id card", idCard);
-
           if (idCard) {
             setDetectedIdCard(idCard);
           }
