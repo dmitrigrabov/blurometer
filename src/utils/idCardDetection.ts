@@ -1,22 +1,4 @@
-import * as tf from "@tensorflow/tfjs";
 import * as cocoSsd from "@tensorflow-models/coco-ssd";
-
-export let model: cocoSsd.ObjectDetection | null = null;
-
-export function resetModel() {
-  model = null;
-}
-
-async function loadModel() {
-  if (!model) {
-    // Initialize TensorFlow.js with WebGL backend
-    await tf.setBackend("webgl");
-    await tf.ready();
-
-    model = await cocoSsd.load();
-  }
-  return model;
-}
 
 interface Prediction {
   class: string;
@@ -25,15 +7,13 @@ interface Prediction {
 }
 
 export async function detectIdCard(
-  base64Image: string
+  base64Image: string,
+  model: cocoSsd.ObjectDetection
 ): Promise<string | null> {
   try {
-    console.log("Starting ID card detection...");
-    const model = await loadModel();
-    console.log("Model loaded successfully");
-
     // Create an image element from base64
     const img = new globalThis.Image();
+
     await new Promise((resolve, reject) => {
       img.onload = resolve;
       img.onerror = reject;
