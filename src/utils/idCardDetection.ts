@@ -6,6 +6,10 @@ interface Prediction {
   bbox: [number, number, number, number];
 }
 
+export function resetModel() {
+  // skip for now
+}
+
 export async function detectIdCard(
   base64Image: string,
   model: cocoSsd.ObjectDetection
