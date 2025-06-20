@@ -50,6 +50,7 @@ const App = () => {
             screenshotFormat="image/jpeg"
             ref={webcamRef}
             screenshotQuality={1}
+            videoConstraints={{ facingMode: "" }}
           />
         </div>
         <div className="flex flex-col flex-1">
